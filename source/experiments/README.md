@@ -62,7 +62,7 @@ Each prepare command writes pair artefacts to `data/prepared/chexpert/<readers>/
 PYTHONPATH=. uv run python -m experiments experiment-1
 ```
 
-Runs a synthetic grid over three conditions (C1, C2, C3) and six (G, K) configurations at N=10,000 samples with seed=0. Outputs `results.json` and `summary.json` to `results/experiment_1/run_<hex>/`.
+Runs a synthetic grid over three conditions (C1, C2, C3) and six (G, K) configurations at N=10,000 samples with seed=0. Writes `results.json`, including a `summary` section, to `results/experiment_1/run_<hex>/`; no separate `summary.json` is produced.
 
 ---
 

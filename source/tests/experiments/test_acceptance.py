@@ -25,7 +25,10 @@ def _load_latest(experiment: str, filename: str):
 
 def test_e1_dissociation_narrative():
     """E1 certifies the dissociation is constructible: C3 has high LL gain but zero BR."""
-    summary = {r["condition"]: r for r in _load_latest("experiment_1", "summary.json")}
+    summary = {
+        r["condition"]: r
+        for r in _load_latest("experiment_1", "results.json")["summary"]
+    }
 
     # C1 (positive control): estimator ranks true BR correctly, detects positive BR.
     assert summary["C1"]["mean_spearman_rho"] > 0.5
