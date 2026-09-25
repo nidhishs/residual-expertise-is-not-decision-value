@@ -1,5 +1,7 @@
 # Residual Expertise Is Not Decision Value
 
+![Decision-boundary geometry](paper/figures/interaction_decomposition.png)
+
 When does residual human predictive information actually change the action deployed by an AI system?
 
 We show that residual expertise has decision value only when the human-updated posterior crosses a reward-induced decision boundary.
@@ -7,7 +9,15 @@ The paper introduces boundary regret as a deployment estimand for human-AI compl
 
 ## Paper
 
-See `paper/` for the full paper source.
+[NeurIPS 2026 camera-ready paper (PDF)](https://github.com/nidhishs/residual-expertise-is-not-decision-value/blob/main/paper/residual-expertise-is-not-decision-value.pdf) · [LaTeX source](paper/)
+
+To rebuild the PDF with [Tectonic](https://tectonic-typesetting.github.io/):
+
+```bash
+cd paper
+tectonic main.tex
+mv main.pdf residual-expertise-is-not-decision-value.pdf
+```
 
 ## Formal proofs
 
@@ -15,4 +25,8 @@ Lean 4 mechanized proofs for the boundary-regret claims are in `lean/`.
 
 ## Code & reproduction
 
-Experiment code and CLI entry points live in `source/`. See `source/data/README.md` for the data pipeline (CheXpert + CIFAR-10H), `source/experiments/README.md` for experiment commands, and `source/experiments/RESULTS.md` for the run-keyed result tables. `source/experiments/run_experiments.sh` runs the full CheXpert pipeline end-to-end.
+Experiment code and CLI entry points live in `source/`. See [`source/data/README.md`](source/data/README.md) for the data pipeline (CheXpert + CIFAR-10H) and [`source/experiments/README.md`](source/experiments/README.md) for experiment commands and generated results. `source/experiments/run_experiments.sh` runs the full CheXpert pipeline end-to-end.
+
+## Earlier paper
+
+[All Substitution Is Local](https://arxiv.org/abs/2604.01443) and its original source and proofs are preserved on [`archive/all-substitution-is-local`](https://github.com/nidhishs/residual-expertise-is-not-decision-value/tree/archive/all-substitution-is-local).

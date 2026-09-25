@@ -136,4 +136,4 @@ PYTHONPATH=. uv run python -m experiments experiment-2 --dataset cifar10h
 PYTHONPATH=. uv run python -m experiments experiment-3 real --dataset cifar10h
 ```
 
-Both write to `results/experiment_<n>/run_<hex>/`. Results are summarised in [`RESULTS.md`](RESULTS.md#cifar-10h-results).
+Both write run-keyed `results.json` files under `results/experiment_<n>/run_<hex>/` (generated locally and excluded from git).

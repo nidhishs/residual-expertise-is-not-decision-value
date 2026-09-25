@@ -32,8 +32,9 @@ build/
 # Logs
 **/*.log
 
-# LaTeX build artifacts
+# LaTeX build artifacts (except the published camera-ready PDF)
 paper/*.pdf
+!paper/residual-expertise-is-not-decision-value.pdf
 paper/*.aux
 paper/*.out
 paper/*.toc
