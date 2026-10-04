@@ -9,7 +9,7 @@ No residual-expertise audit produces either behavior.
 \paragraph{Limitations.}
 Boundary regret characterizes the reward-local decision value latent in the joint distribution of $(x, h, y)$.
 Whether a deployed workflow elicits and uses that value depends on the elicitation interface and on behavioral frictions \citep{Vaccaro2024,BucinaEtAl2021} the estimand is not designed to model.
-The deployed score is a plug-in estimate of an exact identity; calibration of the model belief and the human-augmented posterior controls the gap between the two.
+The deployed score is a plug-in estimate of an exact identity; systematic error in either the model belief or human-augmented posterior can change its magnitude and false-positive rate when it moves an estimate across a reward facet.
 
 \paragraph{Broader impact.}
 Routing scarce human review to cases that change the reward-relevant action raises operational efficiency in high-stakes settings such as clinical reading and triage.
@@ -21,6 +21,6 @@ Boundary regret does not single out the human as the information source.
 The same identity prices any candidate channel (a second-opinion reader, an additional diagnostic test, a more expensive feature) by what it would change about the reward-relevant action.
 A reward-faithful training signal for learning-to-defer follows: replace accuracy-based deferral labels with the regret of not consulting, and the construction extends to multi-expert and sequential-elicitation policies.
 A prospective deployment routing review on $\BRhat$ under operational rewards is the direct test of how much latent decision value a real workflow can extract.
-Complementarity is reward-relative. A signal can be informative under any proper scoring rule and leave the deployed action unchanged. The audit that ignores the boundary measures the wrong thing.
+Complementarity is reward-relative. A signal can be informative under any proper scoring rule while leaving the model-only action optimal. The audit that ignores the boundary measures the wrong thing.
 
 

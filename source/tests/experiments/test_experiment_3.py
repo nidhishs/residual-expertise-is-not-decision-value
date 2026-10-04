@@ -121,6 +121,7 @@ def test_compute_scores_returns_all_policies():
         "L2D",
         "Random",
         "Oracle",
+        "L2D-Tree",
     }
     assert set(scores.keys()) == expected_keys
     for k, v in scores.items():
@@ -170,6 +171,44 @@ def test_evaluate_budget_yields_expected_keys():
             "delta_ci_hi",
         ):
             assert key in entry
+
+
+def test_l2d_tree_is_scored_but_not_bootstrapped():
+    """No bootstrap means no RNG draws, so canonical Exp 3 numbers are unchanged."""
+    rng = np.random.default_rng(0)
+    b_x, b_xh, h, y = _toy_arrays(rng, N=400)
+    scores = allocation.compute_scores(b_x, b_xh, h, y, R1, rng=rng, n_folds=5)
+    out = allocation.evaluate_budget(
+        scores, b_x, b_xh, y, R1, q=0.2, baseline_policy="Margin", rng=rng, n_boot=200
+    )
+    assert ((scores["L2D-Tree"] >= 0) & (scores["L2D-Tree"] <= 1)).all()
+    assert np.isfinite(out["L2D-Tree"]["utility_gain"])
+    assert np.isnan(out["L2D-Tree"]["delta_ci_lo"])
+
+
+def test_reward_sensitivity_matched_reward_is_identity():
+    rng = np.random.default_rng(0)
+    b_x, b_xh, h, y = _toy_arrays(rng, N=400)
+    out = allocation.reward_sensitivity_pair(b_x, b_xh, h, y, R1, R1, rng=rng)
+    assert out["a_x_disagreement"] == out["a_xh_disagreement"] == 0.0
+    for cell in out["budgets"].values():
+        assert cell["utility_config_ranking"] == cell["utility_eval_ranking"]
+        assert cell["overlap"] == 1.0
+
+
+def test_reward_sensitivity_uses_eval_reward_for_utility():
+    rng = np.random.default_rng(0)
+    b_x, b_xh, h, y = _toy_arrays(rng, N=400)
+    out = allocation.reward_sensitivity_pair(
+        b_x, b_xh, h, y, R1, R3, rng=rng, budgets=(1.0,)
+    )
+    # Reviewing everything realizes the full R3 gain regardless of the ranking.
+    g = allocation.per_instance_review_gain(b_x, b_xh, y, R3)
+    no_review = R3[core.model_action(b_x, R3), y].mean()
+    assert np.isclose(
+        out["budgets"]["1.00"]["utility_config_ranking"], no_review + g.mean()
+    )
+    assert out["a_x_disagreement"] > 0
 
 
 def test_synthetic_configs_listed():

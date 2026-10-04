@@ -82,6 +82,39 @@ C3 & 5 & 10 & 6 & \text{n/a} &  0.0 & 0.738 \\
 \end{tabular}
 \end{table}
 
+\subsection{Sensitivity to Systematic Belief Miscalibration}
+\label{app:exp1-miscalibration}
+
+The zero FPRs above concern the unshifted cross-fitted estimates.  To isolate the plug-in estimator's sensitivity to systematic belief error, we use the canonical binary cells ($G=K=2$) of C1 and C3.  C1 mixes positive- and zero-regret cases; C3 is the certified strong null with every case in the FPR denominator.  This binary setting also matches the one-vs-rest downstream task without requiring an arbitrary multiclass direction of perturbation.
+
+For a binary fitted belief $b=(b_0,b_1)$, we apply the signed log-odds offset
+\[
+T_\delta(b)_1 = \frac{e^\delta b_1}{b_0 + e^\delta b_1},
+\qquad
+T_\delta(b)_0 = \frac{b_0}{b_0 + e^\delta b_1},
+\qquad \delta\in\{-1,+1\}.
+\]
+Thus $\delta=+1$ multiplies the odds of state 1 by $e$, while $\delta=-1$ divides them by $e$.  We shift $\hat b_x$ and $\hat b_{x,h}$ separately, retain the same simulated cases, fitting protocol, oracle boundary regret, and reward tolerance, and recompute only $\BRhat$ and FPR.  The unshifted baseline is $\delta=0$ and is already reported in the main experiment.
+
+\begin{table}[htbp]
+\centering
+\caption{Paired binary log-odds stress test of plug-in FPR. Each entry is the percentage of oracle-zero cases assigned $\BRhat>0$ after shifting exactly one fitted belief. $n_0$ is the number of oracle-zero cases, using the same tolerance as FPR.}
+\label{tab:exp1-miscalibration}
+\small
+\begin{tabular}{@{}lrrrrrr@{}}
+\toprule
+Condition & Baseline & $\hat b_x,-1$ & $\hat b_x,+1$ & $\hat b_{x,h},-1$ & $\hat b_{x,h},+1$ & $n_0$ \\
+\midrule
+C1 & 0.0 & 50.9 & 49.1 & 0.0 & 0.0 & 6,453 \\
+C3 & 0.0 & 0.0 & 0.0 & 40.4 & 23.0 & 10,000 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+The effect is component- and geometry-dependent.  In C1, perturbing the model-only belief changes the incumbent action and creates false positives among its oracle-zero cases, whereas the same posterior-only shifts do not.  In C3, the safe action makes the model-only shifts inert, but perturbing the human-augmented belief can falsely cross the safe-action facet.  These one-at-a-time shifts intentionally need not preserve the Bayesian coherence relation between $b_x$ and $b_{x,h}$: they are an input-level stress test of separately misspecified deployed estimates, not a perturbation of the exact identity.
+
+This is one interpretable intercept-type stress magnitude, not a general robustness guarantee or an estimate of CheXpert calibration drift.  Calibration fitted and evaluated on genuinely independent (or nested) data could reduce correctable systematic bias, but lower calibration error alone does not guarantee lower boundary-regret FPR near a reward facet.  Standard conformal prediction instead targets coverage of prediction sets; it neither calibrates these point posteriors nor directly controls $\Pr(\BRhat>0\mid\BR=0)$.
+
 % ============================================================
 \section{CheXpert Protocol}
 \label{app:exp2-protocol}
@@ -213,3 +246,5 @@ R3 & $50\%$ & $+0.0057$ & $\mathbf{+0.0057}$ & $+0.0003$ & $+0.0025$ & $+0.0050$
 \bottomrule
 \end{tabular}
 \end{table}
+
+% TODO (revision appendix): Report the configured-system action-disagreement diagnostic: R1 versus R2 changes model-only actions on 32.5% of cases and post-review actions on 18.9%. %

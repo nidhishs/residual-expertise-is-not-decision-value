@@ -20,6 +20,31 @@ logger = logging.getLogger("experiment_1")
 
 _CONFIGS = [(G, K) for G in (2, 3, 5) for K in (G, 2 * G)]
 _CONDITIONS = [("C1", design_c1), ("C2", design_c2), ("C3", design_c3)]
+# Miscalibration stress test: binary cells only, one fitted belief shifted at a time.
+_SHIFT_CELLS = {("C1", 2, 2), ("C3", 2, 2)}
+_SHIFTS = [("b_x", -1.0), ("b_x", 1.0), ("b_xh", -1.0), ("b_xh", 1.0)]
+
+
+def shift_log_odds(b: np.ndarray, delta: float) -> np.ndarray:
+    """Binary beliefs with the odds of state 1 multiplied by exp(delta)."""
+    shifted = b * np.array([1.0, np.exp(delta)])
+    return shifted / shifted.sum(axis=1, keepdims=True)
+
+
+def shifted_fprs(res: dict, R: np.ndarray, tol: float) -> dict:
+    """FPR of plug-in BR̂ after shifting the log-odds of b_x or b_xh."""
+    out = {"n_oracle_zero": int((res["br_oracle"] < tol).sum())}
+    for belief, delta in _SHIFTS:
+        b_x, b_xh = res["b_x_hat"], res["b_xh_hat"]
+        if belief == "b_x":
+            b_x = shift_log_odds(b_x, delta)
+        else:
+            b_xh = shift_log_odds(b_xh, delta)
+        br_hat = core.boundary_regret(b_x, b_xh, R)
+        out[f"{belief}{delta:+.0f}"] = core.false_positive_rate(
+            res["br_oracle"], br_hat, threshold=tol
+        )
+    return out
 
 
 def run_cell(
@@ -49,7 +74,7 @@ def run_cell(
         rho = np.nan
     fpr = core.false_positive_rate(res["br_oracle"], res["br_hat"], threshold=tol)
 
-    return {
+    row = {
         "condition": condition,
         "G": G,
         "K": K,
@@ -60,6 +85,10 @@ def run_cell(
         "frac_br_pos_hat": frac_hat,
         "mean_ll_gain": ll_gain,
     }
+    # Reuses this cell's estimates and draws no randomness, so the grid is unchanged.
+    if (condition, G, K) in _SHIFT_CELLS:
+        row["fpr_shifted"] = shifted_fprs(res, problem.R, tol)
+    return row
 
 
 def run_grid(N: int, rng: np.random.Generator, n_folds: int = 5) -> pd.DataFrame:

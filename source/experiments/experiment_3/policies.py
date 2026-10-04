@@ -11,6 +11,7 @@ Policy list:
     score_margin       : -facet_distance(b_x, R)   (close-to-boundary)
     score_entropy      : Shannon entropy of b_x
     score_l2d          : logistic-proxy P(should defer | b_x)
+                         (pass clf= for the decision-tree sensitivity variant)
     score_random       : uniform random
     score_oracle       : realized R[a_xh, y] - R[a_x, y]   (hindsight; uses y)
 """
@@ -139,12 +140,13 @@ def score_l2d(
     b_xh_train: np.ndarray,
     R: np.ndarray,
     b_x_test: np.ndarray | None = None,
+    clf=None,
 ) -> np.ndarray:
-    """Logistic-proxy learning-to-defer: predict P(should defer | b_x).
+    """Learning-to-defer: predict P(should defer | b_x).
 
     Deferral label uses realized augmented beliefs: defer_i = 1[ R[a_xh_i, y_i] > R[a_x_i, y_i] ]
     where a_x = argmax over b_x_train, a_xh = argmax over b_xh_train.
-    Second-stage classifier maps logit(b_x) -> defer.
+    Second-stage classifier `clf` (default: logistic regression) maps logit(b_x) -> defer.
     """
     if b_x_test is None:
         b_x_test = b_x_train
@@ -156,7 +158,8 @@ def score_l2d(
     if defer.max() == defer.min():
         return np.full(b_x_test.shape[0], float(defer[0]))
 
-    clf = LogisticRegression(max_iter=1000)
+    if clf is None:
+        clf = LogisticRegression(max_iter=1000)
     clf.fit(_hx_features(b_x_train), defer)
     return _aligned_proba(clf, _hx_features(b_x_test))[:, 1]
 

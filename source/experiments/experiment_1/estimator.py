@@ -47,7 +47,8 @@ def estimate_br(
         n_folds: Number of cross-fitting folds.
 
     Returns:
-        Dict with keys: br_hat, br_oracle, b_x_oracle, b_xh_oracle, y, m, h.
+        Dict with keys: br_hat, br_oracle, b_x_hat, b_xh_hat, b_x_oracle,
+        b_xh_oracle, y, m, h.
     """
     K = len(problem.prior)
     y, m, h = core.generate_samples(problem.prior, M.kernel, H.kernel, n, rng)
@@ -96,6 +97,8 @@ def estimate_br(
     return {
         "br_hat": br_hat,
         "br_oracle": br_oracle,
+        "b_x_hat": b_x_hat,
+        "b_xh_hat": b_xh_hat,
         "b_x_oracle": b_x_oracle,
         "b_xh_oracle": b_xh_oracle,
         "y": y,

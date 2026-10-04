@@ -8,7 +8,7 @@ from click.testing import CliRunner
 import core
 from experiments.experiment_1.conditions import design_c1, design_c2, design_c3
 from experiments.experiment_1.estimator import estimate_br
-from experiments.experiment_1.runner import main, run_grid
+from experiments.experiment_1.runner import main, run_grid, shift_log_odds
 
 # ---------------------------------------------------------------------------
 # Helpers
@@ -87,6 +87,19 @@ def test_run_grid_smoke():
     assert len(df) == 18
     assert bool(df["condition"].isin(["C1", "C2", "C3"]).all())
     assert bool((df["N"] == 100).all())
+    shifted = df.dropna(subset=["fpr_shifted"])
+    assert set(zip(shifted["condition"], shifted["G"], shifted["K"])) == {
+        ("C1", 2, 2),
+        ("C3", 2, 2),
+    }
+
+
+def test_shift_log_odds_multiplies_odds():
+    b = np.array([[0.8, 0.2], [0.5, 0.5]])
+    shifted = shift_log_odds(b, 1.0)
+    assert np.allclose(shifted.sum(axis=1), 1.0)
+    assert np.allclose(shifted[:, 1] / shifted[:, 0], np.e * b[:, 1] / b[:, 0])
+    assert np.allclose(shift_log_odds(shifted, -1.0), b)
 
 
 def test_cli_writes_outputs(tmp_path):
@@ -105,6 +118,7 @@ def test_cli_writes_outputs(tmp_path):
     rows = payload["results"]
     assert len(rows) == 18
     assert set(rows[0].keys()) == {
+        "fpr_shifted",
         "condition",
         "G",
         "K",

@@ -12,6 +12,7 @@ from collections.abc import Iterable
 import numpy as np
 from scipy.stats import binomtest
 from sklearn.model_selection import KFold, StratifiedKFold
+from sklearn.tree import DecisionTreeClassifier
 
 import core
 from core import mean_bootstrap_ci
@@ -21,8 +22,21 @@ from . import policies
 _N_FOLDS = 5
 _N_BOOT = 10_000
 
-# All 7 policies to score, in canonical order.
-POLICY_NAMES = ("BR_hat", "Residual", "Margin", "Entropy", "L2D", "Random", "Oracle")
+# All policies to score, in canonical order.
+POLICY_NAMES = (
+    "BR_hat",
+    "Residual",
+    "Margin",
+    "Entropy",
+    "L2D",
+    "Random",
+    "Oracle",
+    "L2D-Tree",
+)
+# L2D-Tree is an appendix sensitivity variant. It draws no randomness and gets no
+# bootstrap CI, so adding it leaves the shared RNG stream, and therefore every
+# other published Experiment 3 number, unchanged.
+NO_CI_POLICIES = ("L2D-Tree",)
 BUDGETS: tuple[float, ...] = (0.05, 0.10, 0.20, 0.50)
 BASELINE: str = "Margin"
 
@@ -78,7 +92,7 @@ def compute_scores(
     rng: np.random.Generator,
     n_folds: int = _N_FOLDS,
 ) -> dict[str, np.ndarray]:
-    """5-fold cross-fitted scoring for BR_hat, Residual, L2D; direct for all others.
+    """5-fold cross-fitted scoring for BR_hat, Residual, L2D(-Tree); direct for all others.
 
     Args:
         b_x: (N, K) model-only beliefs.
@@ -109,6 +123,7 @@ def compute_scores(
     out["BR_hat"] = np.zeros(n)
     out["Residual"] = np.zeros(n)
     out["L2D"] = np.zeros(n)
+    out["L2D-Tree"] = np.zeros(n)
 
     for tr_idx, te_idx in _make_folds(n, y, n_folds, cv_seed):
         b_x_tr, h_tr, y_tr = b_x[tr_idx], h[tr_idx], y[tr_idx]
@@ -120,6 +135,14 @@ def compute_scores(
         out["Residual"][te_idx] = policies.score_residual(b_x_te, h_model, y_model)
         out["L2D"][te_idx] = policies.score_l2d(
             b_x_tr, y_tr, b_xh_tr, R, b_x_test=b_x_te
+        )
+        out["L2D-Tree"][te_idx] = policies.score_l2d(
+            b_x_tr,
+            y_tr,
+            b_xh_tr,
+            R,
+            b_x_test=b_x_te,
+            clf=DecisionTreeClassifier(max_depth=3, random_state=0),
         )
 
     return out
@@ -190,6 +213,8 @@ def evaluate_budget(
         diff = (indicator - base_indicator) * g
         if name == baseline_policy:
             ci_lo = ci_hi = 0.0
+        elif name in NO_CI_POLICIES:
+            ci_lo = ci_hi = float("nan")
         else:
             ci_lo, ci_hi = paired_bootstrap_ci(diff, rng=rng, n_boot=n_boot)
         return {
@@ -291,3 +316,88 @@ def aggregate_pairs(
             for rn in reward_names
         },
     }
+
+
+def reward_sensitivity_pair(
+    b_x: np.ndarray,
+    b_xh: np.ndarray,
+    h: np.ndarray,
+    y: np.ndarray,
+    R_config: np.ndarray,
+    R_eval: np.ndarray,
+    rng: np.random.Generator,
+    *,
+    budgets: tuple[float, ...] = BUDGETS,
+    n_folds: int = _N_FOLDS,
+) -> dict:
+    """Route by BR_hat under R_config versus R_eval; realize both under R_eval.
+
+    The posterior models are fit once per fold and BR_hat is scored under both
+    rewards, so the two rankings differ only through the reward. Actions and the
+    no-review baseline always use R_eval: only which cases get reviewed differs.
+    """
+    n = len(y)
+    br_config, br_eval = np.zeros(n), np.zeros(n)
+    cv_seed = int(rng.integers(0, 2**31 - 1))
+    for tr_idx, te_idx in _make_folds(n, y, n_folds, cv_seed):
+        h_model, y_model = policies.fit_scoring_models(
+            b_x[tr_idx], h[tr_idx], y[tr_idx]
+        )
+        b_x_te = b_x[te_idx]
+        br_config[te_idx] = policies.score_br_hat(b_x_te, R_config, h_model, y_model)
+        br_eval[te_idx] = policies.score_br_hat(b_x_te, R_eval, h_model, y_model)
+
+    g = per_instance_review_gain(b_x, b_xh, y, R_eval)
+    no_review = float(R_eval[core.model_action(b_x, R_eval), y].mean())
+    by_budget = {}
+    for q in budgets:
+        sel_config = top_q_indices(br_config, q)
+        sel_eval = top_q_indices(br_eval, q)
+        by_budget[f"{q:.2f}"] = {
+            "utility_config_ranking": no_review + utility_gain(g, sel_config),
+            "utility_eval_ranking": no_review + utility_gain(g, sel_eval),
+            "overlap": len(np.intersect1d(sel_config, sel_eval)) / len(sel_config),
+        }
+    return {
+        "a_x_disagreement": float(
+            (core.model_action(b_x, R_config) != core.model_action(b_x, R_eval)).mean()
+        ),
+        "a_xh_disagreement": float(
+            (
+                core.model_action(b_xh, R_config) != core.model_action(b_xh, R_eval)
+            ).mean()
+        ),
+        "budgets": by_budget,
+    }
+
+
+def aggregate_reward_sensitivity(results: list[dict]) -> dict:
+    """Means across pairs, plus W/L/T of config-ranking vs eval-ranking utility."""
+    out = {
+        "n_pairs": len(results),
+        "mean_a_x_disagreement": float(
+            np.mean([r["a_x_disagreement"] for r in results])
+        ),
+        "mean_a_xh_disagreement": float(
+            np.mean([r["a_xh_disagreement"] for r in results])
+        ),
+        "budgets": {},
+    }
+    for qk in results[0]["budgets"]:
+        cells = [r["budgets"][qk] for r in results]
+        diff = np.array(
+            [c["utility_config_ranking"] - c["utility_eval_ranking"] for c in cells]
+        )
+        out["budgets"][qk] = {
+            "mean_utility_config_ranking": float(
+                np.mean([c["utility_config_ranking"] for c in cells])
+            ),
+            "mean_utility_eval_ranking": float(
+                np.mean([c["utility_eval_ranking"] for c in cells])
+            ),
+            "mean_overlap": float(np.mean([c["overlap"] for c in cells])),
+            "n_wins": int((diff > 0).sum()),
+            "n_losses": int((diff < 0).sum()),
+            "n_ties": int((diff == 0).sum()),
+        }
+    return out

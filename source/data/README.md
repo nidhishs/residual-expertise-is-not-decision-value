@@ -6,31 +6,38 @@ Two datasets are supported:
 
 All commands are run from `source/`.
 
-## Raw data
+## Setup
 
-Place under `data/raw/`:
+```bash
+uv sync --group inference
+```
 
-### CheXpert
-- `CheXpert/test/` — CheXpert v1.0 test images (500 studies). Download from https://stanfordaimi.azurewebsites.net/datasets/23c56a08-b312-4539-b7f8-3067d5114a58.
-- `cheXpert-test-set-labels/` — Radiologist ground-truth CSVs. Clone https://github.com/stanford-aimi/CheXpert-test-set-labels into this directory.
+## Download data
 
-### CIFAR-10H
-- `cifar10h/cifar-10-batches-py/` — Standard CIFAR-10 test batch (`test_batch` pickle).
-- `cifar10h/cifar10h-raw.csv` — Per-annotator CIFAR-10H labels. Download from https://github.com/jcpeterson/cifar-10h.
+```bash
+# CheXpert: requires azcopy and a temporary AIMI container download URL.
+export CHEXLOCALIZE_DOWNLOAD_URL='https://<account>.blob.core.windows.net/chexlocalize?<SAS>'
+bash data/chexpert/download.sh
+
+# CIFAR-10H negative control.
+bash data/cifar10h/download.sh
+```
+
+The scripts write the inputs expected by the pipelines under `data/raw/`.
 
 ## CheXpert pipeline
 
 **Step 1 — DenseNet inference** (writes `data/prepared/chexpert/predictions/<model>/<model>.csv`):
 
 ```bash
-PYTHONPATH=. uv run python -m data.chexpert infer --weights densenet121-res224-chex
+PYTHONPATH=. uv run --group inference python -m data.chexpert infer --weights densenet121-res224-chex
 # options: --weights TEXT  --batch-size INT  --force
 ```
 
 **Step 2 — Prepare pair artefacts** (writes `data/prepared/chexpert/<readers>/<model>/pairs/*.npz`):
 
 ```bash
-PYTHONPATH=. uv run python -m data.chexpert prepare \
+PYTHONPATH=. uv run --group inference python -m data.chexpert prepare \
   --predictions data/prepared/chexpert/predictions/densenet121-res224-chex/densenet121-res224-chex.csv \
   --readers gt
 # options: --readers [gt|bm|all]  --limit INT
@@ -46,7 +53,7 @@ Reader subsets:
 **Step 1 — Pretrained classifier inference** (writes `data/prepared/cifar10h/<weights>/<weights>.csv`):
 
 ```bash
-PYTHONPATH=. uv run python -m data.cifar10h infer --weights cifar10_resnet20
+PYTHONPATH=. uv run --group inference python -m data.cifar10h infer --weights cifar10_resnet20
 # options: --weights TEXT  --batch-size INT  --force
 ```
 
@@ -55,7 +62,7 @@ Supported weights (from `chenyaofo/pytorch-cifar-models`): `cifar10_resnet20`, `
 **Step 2 — Prepare pair artefacts** (writes `data/prepared/cifar10h/<model>/pairs/*.npz`, 10 classes × top-50 annotators = 500 pairs per model; pairs with fewer than 10 positives or 10 negatives are skipped):
 
 ```bash
-PYTHONPATH=. uv run python -m data.cifar10h prepare \
+PYTHONPATH=. uv run --group inference python -m data.cifar10h prepare \
   --predictions data/prepared/cifar10h/cifar10_resnet20/cifar10_resnet20.csv
 # options: --limit INT
 ```

@@ -7,7 +7,7 @@ An instance with features $x \in \mathcal{X}$ has unknown state $y \in \mathcal{
 The decision-maker chooses an action $a$ from a finite set $\mathcal{A}$, $|\mathcal{A}| \geq 2$, and receives reward $r_a(y)$ specified by $R \in \R^{|\mathcal{A}| \times K}$.
 A \emph{belief} $b \in \Delta^{K-1}$ is a probability vector over states; write $b_x = P(Y \mid x)$ for the model belief at instance $x$.
 At any belief, the terminal value is the largest expected reward available from the action set.
-The model-optimal action $a_x$ attains this value under $b_x$.
+The model-only action $a_x$ attains this value under $b_x$.
 Each action has a decision region: the beliefs at which that action is optimal.
 Formally,
 \begin{equation}
@@ -28,7 +28,7 @@ After observing the human signal $h$, the model belief $b_x$ updates to $b_{x,h}
 That update has decision value only if it crosses a decision facet, making some rival action better than $a_x$.
 
 \begin{definition}[Boundary Regret]\label{def:br-instance}
-For an instance $x$ with model-optimal action $a_x$ and human signal $h$, the \emph{instance-level boundary regret} is the regret of keeping $a_x$ after the belief updates from $b_x$ to $b_{x,h}$.
+For an instance $x$ with model-only action $a_x$ and human signal $h$, the \emph{instance-level boundary regret} is the regret of retaining $a_x$ after the belief updates from $b_x$ to $b_{x,h}$.
 The \emph{ex ante boundary regret} is the expected decision value of the human signal at instance $x$, before $h$ is observed.
 Formally,
 \begin{equation}
@@ -79,11 +79,11 @@ Subtract the fixed-action value from the posterior value:
 
 \subsection{Boundary Crossing}
 Boundary regret is positive exactly when at least one reachable human-updated posterior leaves the incumbent decision region.
-If every reachable posterior stays in $\mathcal{R}_{a_x}$, the human signal may improve prediction, but the deployed action is unchanged.
+If every reachable posterior stays in $\mathcal{R}_{a_x}$, the human signal may improve prediction, but the model-only action remains optimal.
 
 \begin{theorem}[Facet Activation Bridge]\label{thm:facet-bridge}
 For a coherent Bayesian belief/update pair $(b_x,b_{x,h})$, there is positive ex ante boundary regret if and only if some reachable posterior strictly prefers a rival action to the model-only action.
-Equivalently, boundary regret is zero if and only if every reachable posterior remains in the model action's decision region:
+Equivalently, boundary regret is zero if and only if every reachable posterior remains in the model-only action's decision region:
 \begin{equation}
     \begin{aligned}
     \BR(x) > 0
@@ -148,5 +148,5 @@ For ex ante review allocation, we also estimate $P(h \mid x)$ before human revie
     \widehat\E_{h \mid x}\!\left[V(\bpost_{x,h}) - r_{a_x} \cdot \bpost_{x,h}\right].
 \label{eq:ex-ante-brhat}
 \end{equation}
-Calibration affects how accurately this plug-in score recovers true boundary regret; Section~\ref{sec:exp1} studies this sensitivity.
+Calibration affects how accurately this plug-in score recovers true boundary regret; Appendix~\ref{app:exp1-miscalibration} reports a targeted binary stress test of systematic belief error.
 Section~\ref{sec:experiments} also details how this quantity is estimated for each experiment.

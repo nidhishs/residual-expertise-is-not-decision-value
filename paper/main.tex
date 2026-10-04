@@ -68,8 +68,8 @@
 Audits of human--AI complementarity target the wrong estimand.
 They ask whether the human knows more than the model; deployment asks whether that knowledge would change the action.
 Residual predictive expertise is not residual decision value.
-Deployment rewards actions, and a posterior movement that does not cross a reward-induced action boundary changes nothing; a signal can be informative under log-loss and leave the deployed action unchanged.
-We formalize the missing quantity as \emph{boundary regret}: the regret of holding the model's action after observing the human.
+Deployment rewards actions, and a posterior movement that does not cross a reward-induced action boundary changes nothing; a signal can be informative under log-loss while leaving the model-only action optimal.
+We formalize the missing quantity as \emph{boundary regret}: the regret of retaining the model-only action after observing the human signal.
 In any finite-action Bayesian decision problem, the value of consulting the human equals expected boundary regret, formally verified in Lean 4.
 The identity turns when humans help into a geometric question: which decision facets does the human signal move belief across?
 Complementarity is therefore reward-relative.

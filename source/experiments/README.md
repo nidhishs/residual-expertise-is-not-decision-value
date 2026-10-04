@@ -62,7 +62,7 @@ Each prepare command writes pair artefacts to `data/prepared/chexpert/<readers>/
 PYTHONPATH=. uv run python -m experiments experiment-1
 ```
 
-Runs a synthetic grid over three conditions (C1, C2, C3) and six (G, K) configurations at N=10,000 samples with seed=0. Writes `results.json`, including a `summary` section, to `results/experiment_1/run_<hex>/`; no separate `summary.json` is produced.
+Runs a synthetic grid over three conditions (C1, C2, C3) and six (G, K) configurations at N=10,000 samples with seed=0. Writes `results.json`, including a `summary` section, to `results/experiment_1/run_<hex>/`; no separate `summary.json` is produced. The binary C1/C3 cells (`G=K=2`) also carry `fpr_shifted`: the FPR of BR̂ after shifting the log-odds of the fitted `b_x` or `b_xh` by ±1 (appendix miscalibration stress test).
 
 ---
 
@@ -97,7 +97,7 @@ PYTHONPATH=. uv run python -m experiments experiment-2 --dataset chexpert/all
 PYTHONPATH=. uv run python -m experiments experiment-3 synthetic
 ```
 
-Evaluates allocation policies (BR_hat, Margin, Entropy, Residual, L2D, Random, Oracle) on 3 synthetic pair configurations at N=10,000, seed=0. Outputs `results.json` to `results/experiment_3/run_<hex>/`.
+Evaluates allocation policies (BR_hat, Margin, Entropy, Residual, L2D, Random, Oracle, plus the appendix-only L2D-Tree variant) on 3 synthetic pair configurations at N=10,000, seed=0. Outputs `results.json` to `results/experiment_3/run_<hex>/`.
 
 ### Real regime — main paper (§4.3) — 25 pairs
 
@@ -115,6 +115,17 @@ PYTHONPATH=. uv run python -m experiments experiment-3 real --dataset chexpert/a
 ```
 
 Outputs `results.json` to `results/experiment_3/run_<hex>/`.
+
+### Reward misspecification — appendix — 25 pairs
+
+Ranks cases by BR̂ under `--config` (default R1) and realizes actions and utility under `--eval` (default R2), against ranking by the evaluation reward itself. Posterior models are fit once per fold, so the two rankings differ only through the reward.
+
+```bash
+PYTHONPATH=. uv run python -m experiments experiment-3 reward-sensitivity \
+  --dataset chexpert/gt --model densenet121-res224-chex
+```
+
+Outputs `results.json` to `results/experiment_3_reward_sensitivity/run_<hex>/`.
 
 ---
 

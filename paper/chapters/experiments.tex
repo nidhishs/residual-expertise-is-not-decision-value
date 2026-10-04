@@ -50,9 +50,12 @@ C3 & Strong null      & \text{n/a}   & 0.000 &  0.0 &  0.0 & \textbf{0.595} \\
 \end{table}
 
 The estimator separates predictive value from decision value.
-In C1, $\BRhat$ ranks true boundary regret well ($\rho=0.901$) across the 37.9\% of instances where crossings occur (per-configuration details in Appendix~\ref{app:exp1-detail}); FPR is zero in both nulls.
+In C1, $\BRhat$ ranks true boundary regret well ($\rho=0.901$) across the 37.9\% of instances where crossings occur (per-configuration details in Appendix~\ref{app:exp1-detail}); under the unshifted cross-fitted estimates, FPR is zero in both nulls.
 C3 is the critical case: the human signal achieves the highest log-loss improvement of any condition ($\Delta\mathrm{LL}=0.595$), yet $\BRhat$ assigns zero boundary regret to every instance because no posterior crosses the certified threshold.
 High predictive accuracy on task-relevant features does not imply decision value when a safe action dominates the reachable belief region.
+
+A paired binary stress test shifts the log-odds of $\hat b_x$ or $\hat b_{x,h}$ by $\pm1$ while holding the simulated cases, fitting protocol, and all other quantities fixed (Appendix~\ref{app:exp1-miscalibration}).
+The resulting FPR is component- and geometry-dependent: shifts in $\hat b_x$ yield 49.1--50.9\% FPR in C1, whereas shifts in $\hat b_{x,h}$ yield 23.0--40.4\% FPR in the C3 strong null; the complementary shifts remain zero in these canonical binary cells.
 
 % ==============================================================
 
