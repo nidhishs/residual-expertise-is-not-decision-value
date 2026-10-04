@@ -24,7 +24,7 @@ In any finite-action Bayesian decision problem, the value of observing the human
   \VoI(H \mid b_x) \;=\; \E_{h \mid x}\bigl[\BR(x, h)\bigr].
 \end{equation}
 Predictive gain without a reachable boundary crossing has zero decision value for the deployed action set.
-We formalize in Lean~4 both the zero-regret boundary condition and the value-of-information identity above.
+We formalize in Lean~4 with Mathlib \citep{DeMouraUllrich2021,MathlibCommunity2020} both the zero-regret boundary condition and the value-of-information identity above.
 The paper develops this criterion in four steps:
 \begin{itemize}[nosep,leftmargin=1.5em]
   \item We define boundary regret and prove, in Lean~4, that $\VoI(H \mid b_x) = \E_{h \mid x}[\BR(x,h)]$, with a geometric facet-activation criterion that characterizes when boundary regret is strictly positive (Theorems~\ref{thm:voi-br}--\ref{thm:facet-bridge}).

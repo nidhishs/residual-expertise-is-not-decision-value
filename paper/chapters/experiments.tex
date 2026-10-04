@@ -68,7 +68,7 @@ Does the correlation between residual predictive expertise and boundary regret i
 \paragraph{Setup.}
 We pair a pretrained DenseNet-121 chest X-ray classifier \citep{Huang2017,Cohen2022} with five board-certified radiologists of the CheXpert reader study \citep{Irvin2019} across five official competition conditions (Atelectasis, Cardiomegaly, Consolidation, Edema, Pleural Effusion), yielding $N=25$ reader--task pairs on 500 frontal radiographs.
 For each pair, the ground-truth label $y$ is the majority vote of the \emph{remaining four} readers, which eliminates structural $h$--$y$ contamination and ensures $y \perp h$.
-Model beliefs $b_x$ are temperature-scaled per pair on a 30\% calibration split; evaluation uses the remaining 70\% (${\approx}350$ images per pair).
+Model beliefs $b_x$ are temperature-scaled \citep{GuoEtAl2017} per pair on a 30\% calibration split; evaluation uses the remaining 70\% (${\approx}350$ images per pair).
 The human-augmented posterior $\bpost_{x,h} \approx P(Y=1 \mid x, h)$ is estimated via 5-fold cross-fitted logistic regression on features $[\operatorname{logit}(b_x),\, h,\, h \cdot \operatorname{logit}(b_x)]$.
 Spearman correlations between residual predictive expertise (log-loss gain over $b_x$) and $\BRhat$ are reported across the 25 pairs under each reward regime; label protocol details in Appendix~\ref{app:exp2-protocol}.
 

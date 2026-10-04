@@ -63,6 +63,7 @@
 \begin{document}
 
 \maketitle
+\setcounter{footnote}{0}% NeurIPS leaves the symbolic title-note counter at 1.
 
 \begin{abstract}
 Audits of human--AI complementarity target the wrong estimand.
@@ -76,7 +77,7 @@ Complementarity is therefore reward-relative.
 A given human signal can be valuable under one reward matrix and worthless under another, the human's knowledge unchanged; the boundary moved, not the expertise.
 The gap is widest precisely where asymmetric costs dominate: high-stakes clinical and operational decisions.
 Audits built on residual predictive expertise overstate the value of human review and route scarce review toward cases where the human is informative but the action will not move.
-Boundary regret is the quantity to measure.
+Boundary regret is the quantity to measure.\footnote{Code and Lean~4 proofs: \href{https://github.com/nidhishs/residual-expertise-is-not-decision-value}{\texttt{github.com/nidhishs/residual-expertise-is-not-decision-value}}.}
 \end{abstract}
 
 \input{chapters/introduction}
@@ -84,6 +85,10 @@ Boundary regret is the quantity to measure.
 \input{chapters/experiments}
 \input{chapters/related}
 \input{chapters/conclusion}
+
+\begin{ack}
+The authors received no third-party funding for this work and declare no competing interests.
+\end{ack}
 
 \bibliographystyle{plainnat}
 \bibliography{references}

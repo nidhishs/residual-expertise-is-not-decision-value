@@ -5,8 +5,8 @@ Four literatures bear most directly on boundary regret: residual human expertise
 
 \paragraph{Residual Human Expertise Audits.}
 A line of work asks whether human judgments carry predictive information an algorithm has missed.
-\citet{AlurEtAl2023} test for residual expertise using conditional covariance, log-loss improvement, and conditional-independence checks; \citet{AlurRaghavanShah2024} give an algorithmic-indistinguishability account of the same question.
-\citet{KleinbergEtAl2018} formalize the selective-labels problem: when human labels are observed only on reviewed cases, estimating how outcomes depend on both the instance and the human judgment requires accounting for non-random review.
+\citet{AlurEtAl2023} test for residual expertise by checking whether expert predictions are independent of outcomes conditional on the available features; \citet{AlurRaghavanShah2024} give an algorithmic-indistinguishability account of the same question.
+\citet{KleinbergEtAl2018} formalize the selective-labels problem: when outcomes are observed only for cases selected by the human decision-maker, estimating how outcomes depend on both the instance and the human judgment requires accounting for non-random selection.
 \citet{GuoEtAl2025} push the question to the feature level via ILIV-SHAP, attributing each input feature's contribution to the agent-complementary VoI of an AI prediction.
 What these papers ask is whether humans carry residual predictive information, and which features drive it. We ask something narrower and decision-relevant: whether that information actually changes the reward-optimal action. Residual expertise can sit comfortably alongside zero residual decision value, and a feature-level decomposition does not tell you whether any of its predictive contributions cross a reward-induced decision facet.
 
